@@ -13,6 +13,7 @@ class ImportSmokeTests(unittest.TestCase):
             "freecad.AIAgentSidebar.detection",
             "freecad.AIAgentSidebar.prompt",
             "freecad.AIAgentSidebar.process",
+            "freecad.AIAgentSidebar.resources",
             "freecad.AIAgentSidebar.sidebar",
             "freecad.AIAgentSidebar.init_gui",
         ]
