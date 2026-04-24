@@ -13,6 +13,7 @@ from .qt_compat import QtUnavailableError, load_qt
 _REGISTERED = False
 _MENU_REGISTERED = False
 _MENU_ACTION = None
+_MENU_INSTALL_SCHEDULED = False
 MENU_NAME = "AI Agent"
 
 
@@ -49,6 +50,8 @@ def register() -> None:
 
     if not _MENU_REGISTERED:
         _MENU_REGISTERED = install_menu_action(FreeCADGui)
+        if not _MENU_REGISTERED:
+            schedule_menu_action_install(FreeCADGui)
 
 
 def install_menu_action(freecad_gui) -> bool:
@@ -82,6 +85,29 @@ def install_menu_action(freecad_gui) -> bool:
     menu.addAction(action)
     _MENU_ACTION = action
     return True
+
+
+def schedule_menu_action_install(freecad_gui) -> None:
+    """Retry menu installation after FreeCAD finishes building the main window."""
+
+    global _MENU_INSTALL_SCHEDULED
+    if _MENU_INSTALL_SCHEDULED:
+        return
+
+    try:
+        qt = load_qt()
+    except QtUnavailableError:
+        return
+
+    _MENU_INSTALL_SCHEDULED = True
+    for delay_ms in (0, 250, 1000, 3000):
+        qt.QtCore.QTimer.singleShot(delay_ms, lambda gui=freecad_gui: _retry_menu_action_install(gui))
+
+
+def _retry_menu_action_install(freecad_gui) -> None:
+    global _MENU_REGISTERED
+    if not _MENU_REGISTERED:
+        _MENU_REGISTERED = install_menu_action(freecad_gui)
 
 
 def _find_or_create_menu(menu_bar, title: str):
