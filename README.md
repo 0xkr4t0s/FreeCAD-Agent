@@ -12,4 +12,10 @@ Run the unit tests outside FreeCAD:
 python -m unittest discover -s tests
 ```
 
+Run the FreeCAD headless smoke test on macOS:
+
+```bash
+printf 'g={"__file__":"scripts/freecad_headless_smoke.py","__name__":"__main__"}; exec(compile(open("scripts/freecad_headless_smoke.py").read(), "scripts/freecad_headless_smoke.py", "exec"), g)\n' | /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd
+```
+
 Inside FreeCAD, install or symlink this repository as an addon, then load the `Open AI Agent Sidebar` command from the GUI environment.
