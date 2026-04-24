@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Any, Callable
 
 from .qt_compat import QtUnavailableError, load_qt, signal_type
@@ -47,6 +49,7 @@ if _QT_CORE is not None and _SIGNAL is not None:
             if working_dir and hasattr(self._process, "setWorkingDirectory"):
                 self._process.setWorkingDirectory(working_dir)
 
+            _prepend_binary_dir_to_path(self._process, binary_path)
             self._connect_process_signals()
             self._process.start(binary_path, args or [])
 
@@ -107,6 +110,7 @@ else:
             self._process = self._process_factory()
             if working_dir and hasattr(self._process, "setWorkingDirectory"):
                 self._process.setWorkingDirectory(working_dir)
+            _prepend_binary_dir_to_path(self._process, binary_path)
             self._connect_process_signals()
             self._process.start(binary_path, args or [])
 
@@ -145,3 +149,30 @@ def _decode_qbytearray(data: Any) -> str:
     else:
         raw = bytes(data)
     return raw.decode("utf-8", errors="replace")
+
+
+def _prepend_binary_dir_to_path(process: Any, binary_path: str) -> None:
+    """Make Node-style shims work when FreeCAD was launched without shell PATH."""
+
+    binary_dir = str(Path(binary_path).expanduser().parent)
+    if not binary_dir or not hasattr(process, "setProcessEnvironment"):
+        return
+
+    if _QT_CORE is not None and hasattr(_QT_CORE, "QProcessEnvironment"):
+        environment = _QT_CORE.QProcessEnvironment.systemEnvironment()
+        current_path = environment.value("PATH", os.environ.get("PATH", ""))
+        environment.insert("PATH", _join_path(binary_dir, current_path))
+        process.setProcessEnvironment(environment)
+        return
+
+    current_path = os.environ.get("PATH", "")
+    process.setProcessEnvironment({"PATH": _join_path(binary_dir, current_path)})
+
+
+def _join_path(first: str, rest: str) -> str:
+    if not rest:
+        return first
+    parts = rest.split(os.pathsep)
+    if first in parts:
+        return rest
+    return first + os.pathsep + rest

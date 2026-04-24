@@ -11,7 +11,7 @@ from freecad.AIAgentSidebar.detection import AgentDetector
 
 class AgentDetectorTests(unittest.TestCase):
     def test_detects_codex_on_path(self) -> None:
-        detector = AgentDetector(which=lambda name: "/usr/local/bin/codex")
+        detector = AgentDetector(which=lambda name: "/usr/local/bin/codex", use_login_shell=False)
 
         info = detector.detect_codex()
 
@@ -20,7 +20,12 @@ class AgentDetectorTests(unittest.TestCase):
         self.assertEqual(info.source, "PATH")
 
     def test_returns_unavailable_when_codex_is_missing(self) -> None:
-        detector = AgentDetector(which=lambda name: None, run_command=self._npm_missing)
+        detector = AgentDetector(
+            which=lambda name: None,
+            run_command=self._npm_missing,
+            extra_search_paths=(),
+            use_login_shell=False,
+        )
 
         info = detector.detect_codex()
 
@@ -43,13 +48,56 @@ class AgentDetectorTests(unittest.TestCase):
                     return subprocess.CompletedProcess(command, 0, stdout=f"{root}\n", stderr="")
                 raise AssertionError(command)
 
-            detector = AgentDetector(which=lambda name: None, run_command=run_command)
+            detector = AgentDetector(
+                which=lambda name: None,
+                run_command=run_command,
+                extra_search_paths=(),
+                use_login_shell=False,
+            )
 
             info = detector.detect_codex()
 
             self.assertTrue(info.available)
             self.assertEqual(info.binary_path, str(executable))
             self.assertEqual(info.source, "npm")
+
+    def test_detects_codex_from_common_tool_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            executable = Path(temp_dir) / "codex"
+            executable.write_text("#!/usr/bin/env node\n", encoding="utf-8")
+            executable.chmod(0o755)
+
+            detector = AgentDetector(
+                which=lambda name: None,
+                run_command=self._npm_missing,
+                extra_search_paths=(temp_dir,),
+                use_login_shell=False,
+            )
+
+            info = detector.detect_codex()
+
+            self.assertTrue(info.available)
+            self.assertEqual(info.binary_path, str(executable))
+            self.assertEqual(info.source, "common path")
+
+    def test_detects_codex_from_login_shell(self) -> None:
+        def run_command(command, **kwargs):
+            if command[-1] == "command -v codex":
+                return subprocess.CompletedProcess(command, 0, stdout="/opt/homebrew/bin/codex\n", stderr="")
+            return self._npm_missing(command, **kwargs)
+
+        detector = AgentDetector(
+            which=lambda name: None,
+            run_command=run_command,
+            extra_search_paths=(),
+            use_login_shell=True,
+        )
+
+        info = detector.detect_codex()
+
+        self.assertTrue(info.available)
+        self.assertEqual(info.binary_path, "/opt/homebrew/bin/codex")
+        self.assertEqual(info.source, "login shell")
 
     def _npm_missing(self, command, **kwargs):
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")

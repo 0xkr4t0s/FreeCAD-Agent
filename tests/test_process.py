@@ -18,6 +18,7 @@ class FakeProcess:
         self.stderr = b""
         self.writes: list[bytes] = []
         self.started_with = None
+        self.environment = None
         self.terminated = False
 
     def start(self, binary_path, args):
@@ -26,6 +27,9 @@ class FakeProcess:
 
     def write(self, payload):
         self.writes.append(payload)
+
+    def setProcessEnvironment(self, environment):
+        self.environment = environment
 
     def terminate(self):
         self.terminated = True
@@ -49,7 +53,7 @@ class AgentProcessTests(unittest.TestCase):
         process.error_received.connect(stderr.append)
         process.started.connect(lambda: started.append(True))
 
-        process.start("/bin/codex", ["--test"])
+        process.start("/opt/homebrew/bin/codex", ["--test"])
         fake.stdout = b"hello"
         fake.stderr = b"warning"
         fake.readyReadStandardOutput.emit()
@@ -57,7 +61,8 @@ class AgentProcessTests(unittest.TestCase):
         process.send("prompt")
         process.stop()
 
-        self.assertEqual(fake.started_with, ("/bin/codex", ["--test"]))
+        self.assertEqual(fake.started_with, ("/opt/homebrew/bin/codex", ["--test"]))
+        self.assertIsNotNone(fake.environment)
         self.assertEqual(stdout, ["hello"])
         self.assertEqual(stderr, ["warning"])
         self.assertEqual(fake.writes, [b"prompt\n"])
