@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import builtins
+
 from . import COMMAND_NAME
 from .resources import icon_path
 from .sidebar import open_sidebar
@@ -30,7 +32,7 @@ class OpenAIAgentSidebarCommand:
         return True
 
 
-class AIAgentSidebarWorkbench:
+class _AIAgentSidebarWorkbenchMixin:
     """Small workbench that exposes the sidebar command as a button."""
 
     MenuText = "AI Agent Sidebar"
@@ -52,6 +54,26 @@ class AIAgentSidebarWorkbench:
         return "Gui::PythonWorkbench"
 
 
+def _find_freecad_workbench_base() -> type | None:
+    base = globals().get("Workbench") or getattr(builtins, "Workbench", None)
+    return base if isinstance(base, type) else None
+
+
+def build_workbench_class(base_class: type | None = None) -> type:
+    """Create a FreeCAD-compatible workbench class.
+
+    FreeCADGui.addWorkbench requires an instance whose class inherits the
+    built-in Workbench base. That base is only present inside FreeCAD, so tests
+    use object as the fallback base.
+    """
+
+    base = base_class or _find_freecad_workbench_base() or object
+    return type("AIAgentSidebarWorkbench", (_AIAgentSidebarWorkbenchMixin, base), {})
+
+
+AIAgentSidebarWorkbench = build_workbench_class()
+
+
 def register() -> None:
     global _REGISTERED, _WORKBENCH_REGISTERED
     if _REGISTERED and _WORKBENCH_REGISTERED:
@@ -67,7 +89,7 @@ def register() -> None:
         _REGISTERED = True
 
     if not _WORKBENCH_REGISTERED and hasattr(FreeCADGui, "addWorkbench"):
-        FreeCADGui.addWorkbench(AIAgentSidebarWorkbench())
+        FreeCADGui.addWorkbench(build_workbench_class()())
         _WORKBENCH_REGISTERED = True
 
 

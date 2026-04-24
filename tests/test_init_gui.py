@@ -4,7 +4,7 @@
 import unittest
 
 from freecad.AIAgentSidebar import COMMAND_NAME
-from freecad.AIAgentSidebar.init_gui import AIAgentSidebarWorkbench, OpenAIAgentSidebarCommand
+from freecad.AIAgentSidebar.init_gui import AIAgentSidebarWorkbench, OpenAIAgentSidebarCommand, build_workbench_class
 
 
 class InitGuiTests(unittest.TestCase):
@@ -22,6 +22,14 @@ class InitGuiTests(unittest.TestCase):
         self.assertEqual(workbench.toolbars, [("AI Agent Sidebar", [COMMAND_NAME])])
         self.assertEqual(workbench.menus, [("AI Agent Sidebar", [COMMAND_NAME])])
         self.assertEqual(AIAgentSidebarWorkbench().GetClassName(), "Gui::PythonWorkbench")
+
+    def test_workbench_class_inherits_freecad_base_when_available(self) -> None:
+        class FakeWorkbenchBase:
+            pass
+
+        workbench_class = build_workbench_class(FakeWorkbenchBase)
+
+        self.assertTrue(issubclass(workbench_class, FakeWorkbenchBase))
 
 
 class RecordingWorkbench:
