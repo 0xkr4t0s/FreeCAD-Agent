@@ -59,11 +59,11 @@
 
     <url
         type = 'repository'
-    >https://github.com/valkyre/FreeCAD-Agent</url>
+    >https://github.com/0xkr4t0s/FreeCAD-Agent</url>
 
     <url
         type = 'bugtracker'
-    >https://github.com/valkyre/FreeCAD-Agent/issues</url>
+    >https://github.com/0xkr4t0s/FreeCAD-Agent/issues</url>
 
     <url
         type = 'readme'
@@ -72,7 +72,7 @@
     <!--[ Content ]――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
 
     <content>
-        <workbench/>
+        <other/>
     </content>
 
 </package>

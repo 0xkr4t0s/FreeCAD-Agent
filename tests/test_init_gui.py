@@ -4,7 +4,7 @@
 import unittest
 
 from freecad.AIAgentSidebar import COMMAND_NAME
-from freecad.AIAgentSidebar.init_gui import AIAgentSidebarWorkbench, OpenAIAgentSidebarCommand, build_workbench_class
+from freecad.AIAgentSidebar.init_gui import OpenAIAgentSidebarCommand, _normalized_menu_title
 
 
 class InitGuiTests(unittest.TestCase):
@@ -14,34 +14,11 @@ class InitGuiTests(unittest.TestCase):
         self.assertEqual(resources["MenuText"], "Open AI Agent Sidebar")
         self.assertTrue(resources["Pixmap"].endswith("Logo.svg"))
 
-    def test_workbench_adds_toolbar_and_menu(self) -> None:
-        workbench = RecordingWorkbench()
+    def test_menu_title_normalization_ignores_mnemonic_marker(self) -> None:
+        self.assertEqual(_normalized_menu_title("&AI Agent"), "AI Agent")
 
-        AIAgentSidebarWorkbench.Initialize(workbench)
-
-        self.assertEqual(workbench.toolbars, [("AI Agent Sidebar", [COMMAND_NAME])])
-        self.assertEqual(workbench.menus, [("AI Agent Sidebar", [COMMAND_NAME])])
-        self.assertEqual(AIAgentSidebarWorkbench().GetClassName(), "Gui::PythonWorkbench")
-
-    def test_workbench_class_inherits_freecad_base_when_available(self) -> None:
-        class FakeWorkbenchBase:
-            pass
-
-        workbench_class = build_workbench_class(FakeWorkbenchBase)
-
-        self.assertTrue(issubclass(workbench_class, FakeWorkbenchBase))
-
-
-class RecordingWorkbench:
-    def __init__(self) -> None:
-        self.toolbars = []
-        self.menus = []
-
-    def appendToolbar(self, name, commands):  # noqa: N802 - FreeCAD API naming
-        self.toolbars.append((name, commands))
-
-    def appendMenu(self, name, commands):  # noqa: N802 - FreeCAD API naming
-        self.menus.append((name, commands))
+    def test_command_name_is_stable_for_menu_action(self) -> None:
+        self.assertEqual(COMMAND_NAME, "AIAgentSidebar_Open")
 
 
 if __name__ == "__main__":
