@@ -1,0 +1,78 @@
+<?xml
+    version = '1.0'
+    encoding = 'UTF-8'
+    standalone = 'no'
+?>
+<!-- SPDX-License-Identifier: LGPL-3.0-or-later -->
+<!-- SPDX-FileNotice: Part of the FreeCAD AI Agent Sidebar addon. -->
+<package
+    format = '1'
+    xmlns = 'https://wiki.freecad.org/Package_Metadata'
+>
+
+    <!--[ Versions ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <freecadmin>1.1.0</freecadmin>
+    <pythonmin>3.11</pythonmin>
+    <version>0.1.0</version>
+    <date>2026-04-25</date>
+
+    <!--[ Info ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <description>Dockable FreeCAD sidebar that connects the active document context to local AI coding agents.</description>
+    <name>AI Agent Sidebar</name>
+
+    <!--[ Tags ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <tag>AI</tag>
+    <tag>Agent</tag>
+    <tag>Sidebar</tag>
+    <tag>Codex</tag>
+
+    <!--[ Maintainers ]――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <maintainer>Valkyre</maintainer>
+
+    <!--[ Authors ]――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <author>Valkyre</author>
+
+    <!--[ Licenses ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <license
+        file = 'LICENSE-Code'
+    >LGPL-3.0-or-later</license>
+
+    <license
+        file = 'LICENSE-Assets'
+    >CC-BY-SA-4.0</license>
+
+    <!--[ Icon ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <icon>freecad/AIAgentSidebar/Resources/Icons/Logo.svg</icon>
+
+    <!--[ Urls ]―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <url
+        type = 'documentation'
+    >Documentation</url>
+
+    <url
+        type = 'repository'
+    >https://github.com/valkyre/FreeCAD-Agent</url>
+
+    <url
+        type = 'bugtracker'
+    >https://github.com/valkyre/FreeCAD-Agent/issues</url>
+
+    <url
+        type = 'readme'
+    >Resources/Documents/Overview.md</url>
+
+    <!--[ Content ]――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-->
+
+    <content>
+        <other/>
+    </content>
+
+</package>
