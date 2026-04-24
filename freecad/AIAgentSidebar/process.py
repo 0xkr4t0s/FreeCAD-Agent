@@ -60,6 +60,10 @@ if _QT_CORE is not None and _SIGNAL is not None:
             payload = text if text.endswith("\n") else f"{text}\n"
             self._process.write(payload.encode("utf-8"))
 
+        def close_input(self) -> None:
+            if self._process is not None and hasattr(self._process, "closeWriteChannel"):
+                self._process.closeWriteChannel()
+
         def stop(self) -> None:
             if self._process is None:
                 return
@@ -120,6 +124,10 @@ else:
                 return
             payload = text if text.endswith("\n") else f"{text}\n"
             self._process.write(payload.encode("utf-8"))
+
+        def close_input(self) -> None:
+            if self._process is not None and hasattr(self._process, "closeWriteChannel"):
+                self._process.closeWriteChannel()
 
         def stop(self) -> None:
             if self._process is not None:

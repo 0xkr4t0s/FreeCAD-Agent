@@ -14,6 +14,7 @@ from .qt_compat import QtUnavailableError, load_qt
 
 
 _DOCK = None
+CODEX_EXEC_ARGS = ["exec", "--skip-git-repo-check", "--color", "never", "-"]
 
 try:
     _QT = load_qt()
@@ -71,7 +72,7 @@ class AIAgentSidebarWidget(_WIDGET_BASE):
         self._context_provider = context_provider or FreeCADContextProvider()
         self._prompt_builder = prompt_builder or PromptBuilder()
         self._agent_info: AgentInfo = self._detector.detect_codex()
-        self._started = False
+        self._running = False
 
         self._build_ui()
         self._connect_signals()
@@ -116,7 +117,7 @@ class AIAgentSidebarWidget(_WIDGET_BASE):
         self._process.error_received.connect(lambda text: self._append(text, prefix="[stderr] "))
         self._process.started.connect(lambda: self._append("Agent process started.\n"))
         self._process.failed.connect(lambda text: self._append(f"[error] {text}\n"))
-        self._process.finished.connect(lambda code, status: self._append(f"Agent process finished: {code} ({status}).\n"))
+        self._process.finished.connect(self._on_process_finished)
 
     def _refresh_detection(self) -> None:
         self._agent_info = self._detector.detect_codex()
@@ -140,10 +141,18 @@ class AIAgentSidebarWidget(_WIDGET_BASE):
 
         built_prompt = self._prompt_builder.build(prompt, self._context_provider.snapshot())
         self._append(f"> {prompt}\n\n")
-        if not self._started:
-            self._process.start(self._agent_info.binary_path, [], None)
-            self._started = True
+        if self._running:
+            self._append("[error] Agent process is already running. Stop it or wait for it to finish.\n")
+            return
+
+        self._running = True
+        self._process.start(self._agent_info.binary_path, list(CODEX_EXEC_ARGS), None)
         self._process.send(built_prompt)
+        self._process.close_input()
+
+    def _on_process_finished(self, code: int, status: int) -> None:
+        self._running = False
+        self._append(f"Agent process finished: {code} ({status}).\n")
 
     def _append(self, text: str, prefix: str = "") -> None:
         self.transcript.moveCursor(self._qt.QtGui.QTextCursor.End)

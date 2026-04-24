@@ -20,6 +20,7 @@ class FakeProcess:
         self.started_with = None
         self.environment = None
         self.terminated = False
+        self.input_closed = False
 
     def start(self, binary_path, args):
         self.started_with = (binary_path, args)
@@ -33,6 +34,9 @@ class FakeProcess:
 
     def terminate(self):
         self.terminated = True
+
+    def closeWriteChannel(self):
+        self.input_closed = True
 
     def readAllStandardOutput(self):
         return self.stdout
@@ -59,6 +63,7 @@ class AgentProcessTests(unittest.TestCase):
         fake.readyReadStandardOutput.emit()
         fake.readyReadStandardError.emit()
         process.send("prompt")
+        process.close_input()
         process.stop()
 
         self.assertEqual(fake.started_with, ("/opt/homebrew/bin/codex", ["--test"]))
@@ -66,6 +71,7 @@ class AgentProcessTests(unittest.TestCase):
         self.assertEqual(stdout, ["hello"])
         self.assertEqual(stderr, ["warning"])
         self.assertEqual(fake.writes, [b"prompt\n"])
+        self.assertTrue(fake.input_closed)
         self.assertTrue(fake.terminated)
         self.assertEqual(started, [True])
 
